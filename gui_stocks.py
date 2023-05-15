@@ -4,9 +4,9 @@ import tkinter.ttk as ttk
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-df = pd.read_csv(r'C:\Users\nglls\OneDrive\Рабочий стол\revenue_data.csv')
+df = pd.read_csv(r'C:\Users\nglls\OneDrive\Рабочий стол\stocks.csv')
 
 class window:
 
@@ -20,7 +20,7 @@ class window:
                                text="Мы собрали данные компании Faberlic c 2013 по 2021 год,\n проанализировали их и создали модель машинного обучения.\n Результаты нашей работы вы можете наблюдать в этом приложении",
                                font = ('Courier', 15), bg="#020111", fg="white", padx=20, pady=20)
         self.label.pack()
-        self.revenue_button = customtkinter.CTkButton(self.master, text="Доход",
+        self.revenue_button = customtkinter.CTkButton(self.master, text="Акции",
                                                       fg_color="#6335CB", hover_color="#5AC5AC", width = 170, height = 50,
                                                       command=self.new_window, font = ('Courier', 15))
         self.revenue_button.pack(padx=10, pady=10)
@@ -28,7 +28,7 @@ class window:
     def new_window(self):
         self.window1 = tk.Toplevel(self.master)
         self.window1.geometry("1000x500")
-        self.window1.title("Доход")
+        self.window1.title("Акции")
         self.window1.configure(bg="#020111")
 
         self.trend_and_sesonal_button = customtkinter.CTkButton(self.window1, text="Тренд и Сезонность", 
@@ -56,10 +56,10 @@ class window:
         self.predict_button.pack(padx=10, pady=10)
 
     def window_trend_and_sesonal(self):
-        plt.plot(df['weaks'], df['revenue'])
-        plt.title('График доходов')
+        plt.plot(df['weaks'], df['stocks'])
+        plt.title('График акций')
         plt.xlabel('Недели')
-        plt.ylabel('Доход')
+        plt.ylabel('Акции')
         plt.show()
 
     def sesonal(self):
@@ -99,7 +99,7 @@ class window:
         w19 = []
         w20 = []
         w21 = []
-        for i in df['revenue']:
+        for i in df['stocks']:
             if z <=7 or 46 < z < 51:
                 w13.append(i)
             elif 51 < z <= 59 or 99 < z <= 103:
@@ -155,7 +155,7 @@ class window:
         s19 = []
         s20 = []
         s21 = []
-        for i in df['revenue']:
+        for i in df['stocks']:
             if 7 < z <= 20:
                 s13.append(i)
             elif 59 < z <= 72:
@@ -211,7 +211,7 @@ class window:
         su19 = []
         su20 = []
         su21 = []
-        for i in df['revenue']:
+        for i in df['stocks']:
             if 20 < z <= 33:
                 su13.append(i)
             elif 72 < z < 86:
@@ -267,7 +267,7 @@ class window:
         a19 = []
         a20 = []
         a21 = []
-        for i in df['revenue']:
+        for i in df['stocks']:
             if 33 < z <= 46:
                 a13.append(i)
             elif 86 < z <= 99:
@@ -317,7 +317,7 @@ class window:
         self.stationarity_window.geometry("1000x500")
         self.stationarity_window.title("Стационарность")
         self.stationarity_window.configure(bg="#020111")
-        adf_result = adfuller(df['revenue'])
+        adf_result = adfuller(df['stocks'])
         adf_text = f"ADF Statistic: {adf_result[0]:.4f}\n"
         adf_text += f"p-value: {adf_result[1]:.4f}\n"
         adf_text += "Critical Values:\n"
@@ -369,10 +369,10 @@ class window:
             else:
                 df['weaks'] = pd.to_datetime(df['weaks'], infer_datetime_format=True)
                 df.set_index('weaks', inplace = True)
-                model = ExponentialSmoothing(df, trend='add', seasonal = 'add', seasonal_periods=108)
-                fitted_model = model.fit()
+                model2 = SARIMAX(df, order=(1, 0, 1), seasonal_order=(1, 1, 0, 108))
+                model_fit = model2.fit()
                 global pred
-                pred = fitted_model.forecast(days)
+                pred = model_fit.forecast(days)
                 
                 label = tk.Label(self.predictions_window, text=pred, font = ('Courier', 15), bg="#020111", fg="white", padx=20, pady=20)
                 label.pack()
@@ -385,11 +385,11 @@ class window:
 
                 
     def prediction_graphics(self):
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(12, 6))
         plt.plot(pred)
-        plt.title('График доходов')
+        plt.title('График акций')
         plt.xlabel('Недели')
-        plt.ylabel('Доход')
+        plt.ylabel('Акции')
         plt.show()
 
 
